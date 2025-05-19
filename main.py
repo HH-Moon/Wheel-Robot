@@ -136,27 +136,28 @@ class ApriltagDetect:
         return distance
 
 def tag_solve1():
-    if distance > 160:
-        if mid < 170 - tag_width / 12:
-            up.CDS_SetSpeed(1, 420)  # 右轮正转  450
-            up.CDS_SetSpeed(2, -350)  # 左轮反转 -450
+    if 100 < distance < 200:
+        if mid < 160 - tag_width / 4:
+            up.CDS_SetSpeed(1, 350)  # 右轮正转  450
+            up.CDS_SetSpeed(2, -350)       # 左轮反转 -450
             time.sleep(0.02)
             print('zuo')
-        elif mid > 175 + tag_width / 12:
-            up.CDS_SetSpeed(1, -350)  # 右轮正转  450
-            up.CDS_SetSpeed(2, 420)  # 左轮反转 -450
+        elif mid > 150 + tag_width / 2:
+            up.CDS_SetSpeed(1, -350)       # 右轮正转  450
+            up.CDS_SetSpeed(2, 350)  # 左轮反转 -450
             time.sleep(0.02)
             print("you")
         else:
             go_straight()
             print("对准")
-    elif 90 < distance <= 160:
-        if mid < 150 - tag_width / 12:
+        print(distance)
+    elif 50 < distance <= 100:
+        if mid < 180 - tag_width / 4:
             up.CDS_SetSpeed(1, 360)  # 右轮正转  450
-            up.CDS_SetSpeed(2, -360)  # 左轮反转 -450
+            up.CDS_SetSpeed(2, -360)       # 左轮反转 -450
             time.sleep(0.02)
             print('zuo')
-        elif mid > 190 + tag_width / 12:
+        elif mid > 160 + tag_width / 4:
             up.CDS_SetSpeed(1, -360)  # 右轮正转  450
             up.CDS_SetSpeed(2, 360)  # 左轮反转 -450
             time.sleep(0.02)
@@ -164,7 +165,8 @@ def tag_solve1():
         else:
             go_straight()
             print("对准")
-    elif distance <= 90:
+        print(distance)
+    elif distance <= 90 and out == 1:
         go_straight()
 
 def April_start_detect():
@@ -210,14 +212,14 @@ def April_start_detect():
         if cv2.waitKey(1) & 0xff == ord('q'):
             break
 
-        # up_platform_act()
+        up_platform_act()
 
     cap.release()
     cv2.destroyAllWindows()
 
 def go_straight():
-    up.CDS_SetSpeed(1, 480)  #右轮正转
-    up.CDS_SetSpeed(2, 510)  #左轮正转
+    up.CDS_SetSpeed(1, 400)  #右轮正转
+    up.CDS_SetSpeed(2, 400)  #左轮正转
 
 def turn_right():
     up.CDS_SetSpeed(1, -500)       #右轮反转 -450
@@ -276,13 +278,14 @@ def up_platform_act():
     if zhuan == 0: #最外层if-elif控制边界
         go_straight()
 
-        if flag == 0:
-            if io_data[1] == 0 and io_data[2] == 0: #次外层if-elif控制箱子
-                if io_data[0] != 1 and io_data[3] != 1: #最内层if-elif控制侧面
-                    go_straight()
-        elif flag == 1:
+        # if flag == 0:
+        #     if io_data[1] == 0 and io_data[2] == 0: #次外层if-elif控制箱子
+        #         if io_data[0] != 1 and io_data[3] != 1: #最内层if-elif控制侧面
+        #             go_straight()
+        if flag == 1:
             if is_tag == 1:
-                tag_solve1()
+                if zhuan != 0:
+                    tag_solve1()
             elif is_tag == 0:
                 stop()
 
@@ -398,7 +401,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
     target = threading.Thread(target=adio_start_detect)
     target.start()
-    cap = cv2.VideoCapture(0)  # '/dev/video0'
+    cap = cv2.VideoCapture('/dev/video0')
     ad = ApriltagDetect()
     cap.set(3, 320)
     cap.set(4, 240)
@@ -417,7 +420,7 @@ if __name__ == "__main__":
             time.sleep(0.4)
             subprocess.check_call("sudo modprobe uvcvideo", shell=True)
             time.sleep(0.2)
-            cap = cv2.VideoCapture(0)
+            cap = cv2.VideoCapture('/dev/video0')
         # frame = cv2.rotate(frame, cv2.ROTATE_180)
         ad.update_frame(frame)
         # if tags:
@@ -441,6 +444,7 @@ if __name__ == "__main__":
         if cv2.waitKey(1) & 0xff == ord('q'):
             break
 
+        # up_platform_act()
         tag_solve1()
 
     cap.release()
