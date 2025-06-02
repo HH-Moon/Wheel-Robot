@@ -28,6 +28,8 @@ io_data = [0]
 ir_history = [[1]*5, [1]*5]  # 用于存储左右红外传感器的历史值
 ir_index = 0
 
+down_platform = 1
+back = 0
 
 def ir_filter(new_left, new_right):
     global ir_history, ir_index
@@ -185,10 +187,10 @@ def get_adio_data():
 def go_straight():
     global adc_average
     if adc_average > 650: #700
-        up.CDS_SetSpeed(1, -800)  # 700
-        up.CDS_SetSpeed(2, -800)  #
+        up.CDS_SetSpeed(1, -900)  # 800
+        up.CDS_SetSpeed(2, -900)  #
     else:
-        up.CDS_SetSpeed(1, -600) #500
+        up.CDS_SetSpeed(1, -600)  #500
         up.CDS_SetSpeed(2, -600)
 
 def go_straight_slow():
@@ -228,63 +230,57 @@ def go_back_tag():
     up.CDS_SetSpeed(2, 600)
 
 def down_back():
-    up.CDS_SetSpeed(1, 600)
-    up.CDS_SetSpeed(2, 600)
+    up.CDS_SetSpeed(1, 700)
+    up.CDS_SetSpeed(2, 700)
 
 def stop():
     up.CDS_SetSpeed(1, 0)
     up.CDS_SetSpeed(2, 0)
 
 def set_angle_up():
-    up.CDS_SetAngle(3, 674, 512)  # 3号 上面674 平地471 底下384 台下微抬535 台下抬高849
-    up.CDS_SetAngle(4, 302, 512)  # 4号 上面302 平地552 底下639 台下微抬471 台下抬高134
+    up.CDS_SetAngle(3, 698, 512)
+    up.CDS_SetAngle(4, 320, 512)
 
 def set_angle_mid():
-    up.CDS_SetAngle(3, 471, 512)  # 3号 上面674 平地471 底下384 台下微抬535 台下抬高849
-    up.CDS_SetAngle(4, 552, 512)  # 4号 上面302 平地552 底下639 台下微抬471 台下抬高134
+    up.CDS_SetAngle(3, 436, 512)
+    up.CDS_SetAngle(4, 587, 512)
 
 def set_angle_down():
-    up.CDS_SetAngle(3, 384, 512)  # 3号 上面674 平地471 底下384 台下微抬535 台下抬高849
-    up.CDS_SetAngle(4, 639, 512)  # 4号 上面302 平地552 底下639 台下微抬471 台下抬高134
+    up.CDS_SetAngle(3, 326, 512)
+    up.CDS_SetAngle(4, 703, 512)
 
 def set_angle_platform():
-    up.CDS_SetAngle(3, 849, 512)  # 3号 上面674 平地471 底下384 台下微抬535 台下抬高849
-    up.CDS_SetAngle(4, 134, 512)  # 4号 上面302 平地552 底下639 台下微抬471 台下抬高134
+    up.CDS_SetAngle(3, 849, 512)  # 3号 上面698 平地442 底下326  台下抬高849
+    up.CDS_SetAngle(4, 198, 512)  # 4号 上面320 平地552 底下703  台下抬高198
 
 
 def down_platform_detect():
     global io_data
     if io_data[1] == 0 and io_data[2] == 0:
         stop()
-        up.CDS_SetAngle(3, 471, 712)
-        up.CDS_SetAngle(4, 552, 712)
+        set_angle_mid()
         time.sleep(0.5)
         down_platform_act()
     elif io_data[2] == 0 and io_data[3] == 1:
         turn_left_down()
-        up.CDS_SetAngle(3, 849, 712)
-        up.CDS_SetAngle(4, 134, 712)
-        time.sleep(2)
     elif io_data[2] == 1 and io_data[3] == 0:
         turn_right_down()
-        up.CDS_SetAngle(3, 849, 712)
-        up.CDS_SetAngle(4, 134, 712)
-        time.sleep(2)
     else:
         turn_right_down()
-        up.CDS_SetAngle(3, 849, 712)
-        up.CDS_SetAngle(4, 134, 712)
-        time.sleep(2)
 
 def down_platform_act():
+    global down_platform
     down_back()
     time.sleep(0.5)
-    up.CDS_SetAngle(3, 674, 512)  #3号 上面674 平地471 底下384 台下微抬535 台下抬高849
-    up.CDS_SetAngle(4, 302, 512)  #4号 上面302 平地552 底下639 台下微抬471 台下抬高134
+    set_angle_up()
+    # up.CDS_SetAngle(3, 674, 512)  #3号 上面674 平地471 底下384 台下微抬535 台下抬高849
+    # up.CDS_SetAngle(4, 302, 512)  #4号 上面302 平地552 底下639 台下微抬471 台下抬高134
     time.sleep(0.3)
-    up.CDS_SetAngle(3, 384, 712)
-    up.CDS_SetAngle(4, 639, 712)
+    set_angle_down()
+    # up.CDS_SetAngle(3, 384, 712)
+    # up.CDS_SetAngle(4, 639, 712)
     time.sleep(0.5)
+    down_platform = 0
 
 def tag_solve():
     global is_tag
@@ -320,26 +316,14 @@ def tag_solve():
             turn_left()
             time.sleep(0.2)
 
-def tag_solve2():
-    global is_tag
-    global distance
-    global mid
-    global tag_width
-    global io_data
-    if is_tag == 0:
-        if distance < 120:
-            go_back()
-            time.sleep(0.2)
-            turn_left_tag()
-            time.sleep(0.4)
-
 def up_platform_act():
     global io_data
     global is_tag
     global flag
     global adc_average
-    up.CDS_SetAngle(3, 471, 712)
-    up.CDS_SetAngle(4, 552, 712)
+    # up.CDS_SetAngle(3, 471, 712)
+    # up.CDS_SetAngle(4, 552, 712)
+    set_angle_mid()
     if io_data[0] ==0 and io_data[3] == 0: #最外层if-elif控制边界
         go_straight()
         if flag == 1:
@@ -351,13 +335,13 @@ def up_platform_act():
             elif io_data[1] == 1 and io_data[2] == 1:
                 if io_data[4] == 0 and io_data[5] == 1:
                     turn_left()
-                    time.sleep(0.3)
+                    time.sleep(0.4)
                 elif io_data[4] == 1 and io_data[5] == 0:
                     turn_right()
-                    time.sleep(0.3)
+                    time.sleep(0.4)
                 elif io_data[4] == 0 and io_data[5] == 0:
                     turn_right()
-                    time.sleep(0.3)
+                    time.sleep(0.4)
                 elif io_data[4] == 1 and io_data[5] == 1:
                     go_straight()
             elif io_data[1] == 0 and io_data[2] == 1:
@@ -411,17 +395,17 @@ def up_platform_act2(filtered_left, filtered_right):
                 turn_left()
             elif io_data[1] == 1 and io_data[2] == 0:
                 turn_right()
-    elif filtered_left == 0 and  filtered_right == 1:
+    elif filtered_left == 0 and filtered_right == 1:
         go_back()
         time.sleep(0.2)
         turn_left()
         time.sleep(0.3)
-    elif filtered_left == 1 and  filtered_right == 0:
+    elif filtered_left == 1 and filtered_right == 0:
         go_back()
         time.sleep(0.2)
         turn_right()
         time.sleep(0.3)
-    elif filtered_left  and  filtered_right == 1:
+    elif filtered_left and filtered_right == 1:
         go_back()
         time.sleep(0.2)
         turn_left()
@@ -459,14 +443,16 @@ if __name__ == "__main__":
 
         filtered_left, filtered_right = ir_filter(io_data[0], io_data[3])
 
-        if adc_average < 430:
+        if adc_average < 425:
+            if down_platform == 0:
+                set_angle_platform()
+                time.sleep(1.5)
+                down_platform = 1
             down_platform_detect()
         else:
             up_platform_act()
 
-
-
-        #
-        # print(adc_average)
+        # set_angle_mid()
+        print('adc_average:', adc_average)
         # print(adc_value)
         # print('distance:', distance)
