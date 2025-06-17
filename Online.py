@@ -17,6 +17,9 @@ distance = 0
 index = 0
 frame = 0
 
+blue_flag = 0
+cx = 0
+cy = 0
 
 di_fang_kuai = 1             # 敌方块1
 zhong_li_kuai = 2            # 中立块0
@@ -152,6 +155,9 @@ class ApriltagDetect:
 
 def April_start_detect():
     global frame
+    global cx
+    global cy
+    global blue_flag
     cap = cv2.VideoCapture(0)  #'/dev/video0'
     ad = ApriltagDetect()
     cap.set(3, 320)
@@ -167,9 +173,41 @@ def April_start_detect():
             subprocess.check_call("sudo modprobe uvcvideo", shell=True)
             time.sleep(0.2)
             cap = cv2.VideoCapture(0)
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        # 定义蓝色的HSV范围（示例值，需根据实际调整）
+        # lower_blue = np.array([100, 150, 50])
+        # upper_blue = np.array([140, 255, 255])
+        lower_blue = np.array([97, 115, 72])
+        upper_blue = np.array([140, 255, 255])
+        # 创建掩膜
+        mask = cv2.inRange(hsv, lower_blue, upper_blue)
+        # 形态学操作（可选，用于降噪）
+        kernel = np.ones((5, 5), np.uint8)
+        mask = cv2.erode(mask, kernel, iterations=1)
+        mask = cv2.dilate(mask, kernel, iterations=1)
+        # 查找轮廓
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        blue_flag = 0
+        # 标记坐标的列表
+        coordinates = []
+        if contours:
+            # 找到最大轮廓
+            largest_contour = max(contours, key=cv2.contourArea)
+            # 计算轮廓中心
+            M = cv2.moments(largest_contour)
+            if M["m00"] != 0:
+                cx = int(M["m10"] / M["m00"])
+                cy = int(M["m01"] / M["m00"])
+                blue_flag = 1  # 1表示检测到蓝色物体
+                coordinates.append((cx, cy))
+                # 在画面中标记中心点
+                cv2.circle(frame, (cx, cy), 7, (0, 0, 255), -1)
+                cv2.putText(frame, f"({cx}, {cy})", (cx - 50, cy - 20),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         # frame = cv2.rotate(frame, cv2.ROTATE_180)
         ad.update_frame(frame)
-        # cv2.imshow("img", frame)
+        cv2.imshow("img", frame)
+        cv2.imshow('Mask', mask)
         if cv2.waitKey(1) & 0xff == ord('q'):
             break
     cap.release()
@@ -334,6 +372,14 @@ def tag_solve():
             time.sleep(0.5) #0.2
             bomb_io_disable_until = current_time + IO_DISABLE_DURATION
 
+def blue_solve():
+    if cx < 160 - 20:
+        turn_left_tag()
+    elif cx > 160 + 20:
+        turn_right_tag()
+    else:
+        go_straight()
+
 def up_platform_act():
     global io_data
     global is_tag
@@ -344,6 +390,8 @@ def up_platform_act():
         go_straight()
         if flag == 1:
             tag_solve()
+        elif blue_flag == 1:
+            blue_solve()
         elif flag == 0: #flag == 0 or is_tag == 1
             if io_data[1] == 0 and io_data[2] == 0:  # 次外层if-elif控制箱子
                 if io_data[0] != 1 and io_data[3] != 1:  # 最内层if-elif控制侧面
@@ -453,7 +501,7 @@ if __name__ == "__main__":
 
         filtered_left, filtered_right = ir_filter(io_data[0], io_data[3])
 
-        if adc_average < 410:
+        if adc_average < 395:
             if down_platform == 0:
                 set_angle_platform()
                 time.sleep(1.5)
