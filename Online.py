@@ -206,8 +206,8 @@ def April_start_detect():
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         # frame = cv2.rotate(frame, cv2.ROTATE_180)
         ad.update_frame(frame)
-        cv2.imshow("img", frame)
-        cv2.imshow('Mask', mask)
+        # cv2.imshow("img", frame)
+        # cv2.imshow('Mask', mask)
         if cv2.waitKey(1) & 0xff == ord('q'):
             break
     cap.release()
@@ -365,7 +365,7 @@ def tag_solve():
             elif io_data[1] == 1 and io_data[2] == 0:
                 turn_right()
     if is_tag == 0:
-        if distance < 200 and 110 < mid < 210:  #90 240
+        if distance < 200 and 120 < mid < 200:  #90 240
             go_back()   #go_back()
             time.sleep(0.1)
             turn_left_bug()
@@ -501,7 +501,7 @@ if __name__ == "__main__":
 
         filtered_left, filtered_right = ir_filter(io_data[0], io_data[3])
 
-        if adc_average < 395:
+        if adc_average < 400:
             if down_platform == 0:
                 set_angle_platform()
                 time.sleep(1.5)
