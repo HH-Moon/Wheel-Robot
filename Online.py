@@ -27,6 +27,7 @@ zha_dan_kuai = 0             # 炸弹块2
 
 adc_value = [0]
 adc_average = 0
+adc_average2 = 0
 io_data = [0]
 
 ir_history = [[1]*5, [1]*5]  # 用于存储左右红外传感器的历史值
@@ -217,8 +218,10 @@ def get_adio_data():
     global io_data
     global adc_value
     global adc_average
+    global adc_average2
     adc_value = up.ADC_Get_All_Channle()
     adc_average = (adc_value[0] + adc_value[1] + adc_value[2]) / 3
+    adc_average2 = (adc_value[0] + adc_value[1] + adc_value[2] + adc_value[3]) / 4
 
     io_all_input = up.ADC_IO_GetAllInputLevel()
     io_array = '{:08b}'.format(io_all_input)
@@ -229,6 +232,7 @@ def get_adio_data():
 
 def go_straight():
     global adc_average
+    global adc_average2
     if adc_average > 650: #700
         up.CDS_SetSpeed(1, -500)  # 600
         up.CDS_SetSpeed(2, -600)  #
@@ -385,6 +389,7 @@ def up_platform_act():
     global is_tag
     global flag
     global adc_average
+    global adc_average2
     set_angle_mid()
     if io_data[0] ==0 and io_data[3] == 0: #最外层if-elif控制边界
         go_straight()
@@ -392,7 +397,7 @@ def up_platform_act():
             tag_solve()
         elif blue_flag == 1:
             blue_solve()
-        elif flag == 0: #flag == 0 or is_tag == 1
+        elif flag == 0 or blue_flag == 0: #flag == 0 or is_tag == 1
             if io_data[1] == 0 and io_data[2] == 0:  # 次外层if-elif控制箱子
                 if io_data[0] != 1 and io_data[3] != 1:  # 最内层if-elif控制侧面
                     go_straight()
@@ -501,7 +506,7 @@ if __name__ == "__main__":
 
         filtered_left, filtered_right = ir_filter(io_data[0], io_data[3])
 
-        if adc_average < 400:
+        if adc_average2 < 418:
             if down_platform == 0:
                 set_angle_platform()
                 time.sleep(1.5)
@@ -512,6 +517,7 @@ if __name__ == "__main__":
 
         # set_angle_mid()
         # print('adc_average:', adc_average)
+        # print('adc_average2:', adc_average2)
         # print(adc_value)
         # print(adc_value)
         # print('distance:', distance)
