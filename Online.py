@@ -369,7 +369,7 @@ def tag_solve():
             elif io_data[1] == 1 and io_data[2] == 0:
                 turn_right()
     if is_tag == 0:
-        if distance < 200 and 120 < mid < 200:  #90 240
+        if distance < 200 and 100 < mid < 220:  #90 240 #120 200
             go_back()   #go_back()
             time.sleep(0.1)
             turn_left_bug()
@@ -496,17 +496,17 @@ if __name__ == "__main__":
     target = threading.Thread(target=April_start_detect)
     target.start()
 
-    # while True:
-    #     get_adio_data()
-    #     if io_data[4] == 0 and io_data[5] == 0:
-    #         break
+    while True:
+        get_adio_data()
+        if io_data[4] == 0 and io_data[5] == 0:
+            break
 
     while True:
         get_adio_data()
 
         filtered_left, filtered_right = ir_filter(io_data[0], io_data[3])
 
-        if adc_average2 < 418:
+        if adc_average2 < 410:
             if down_platform == 0:
                 set_angle_platform()
                 time.sleep(1.5)
@@ -516,8 +516,8 @@ if __name__ == "__main__":
             up_platform_act()
 
         # set_angle_mid()
-        # print('adc_average:', adc_average)
         # print('adc_average2:', adc_average2)
+        # print('adc_average:', adc_average)
         # print(adc_value)
         # print(adc_value)
         # print('distance:', distance)
