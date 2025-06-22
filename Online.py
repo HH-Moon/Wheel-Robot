@@ -36,9 +36,7 @@ ir_index = 0
 down_platform = 1
 back = 0
 
-IO_DISABLE_DURATION = 2000  # 失效持续时间，可根据需要调整
-bomb_io_disable_until = 0  # 失效结束时间戳
-current_time = time.time() * 1000
+cnt = 0
 
 def ir_filter(new_left, new_right):
     global ir_history, ir_index
@@ -343,9 +341,6 @@ def tag_solve():
     global mid
     global tag_width
     global io_data
-    global current_time
-    global bomb_io_disable_until
-    global IO_DISABLE_DURATION
     # print(distance)
 
     if is_tag == 1:
@@ -369,12 +364,11 @@ def tag_solve():
             elif io_data[1] == 1 and io_data[2] == 0:
                 turn_right()
     if is_tag == 0:
-        if distance < 200 and 100 < mid < 220:  #90 240 #120 200
+        if distance < 210:  #90 240 #120 200  #and 120 < mid < 200
             go_back()   #go_back()
             time.sleep(0.1)
             turn_left_bug()
-            time.sleep(0.5) #0.2
-            bomb_io_disable_until = current_time + IO_DISABLE_DURATION
+            time.sleep(0.5) #0.5
 
 def blue_solve():
     if cx < 160 - 20:
@@ -391,6 +385,7 @@ def up_platform_act():
     global adc_average
     global adc_average2
     set_angle_mid()
+
     if io_data[0] ==0 and io_data[3] == 0: #最外层if-elif控制边界
         go_straight()
         if flag == 1:
@@ -433,46 +428,6 @@ def up_platform_act():
         turn_left()
         time.sleep(0.3)
 
-def up_platform_act_edge():
-    global io_data
-    set_angle_mid()
-    if io_data[0] ==0 and io_data[3] == 0: #最外层if-elif控制边界
-        go_straight_slow()
-        # if io_data[1] == 0 and io_data[2] == 0:  # 次外层if-elif控制箱子
-        #     if io_data[0] != 1 and io_data[3] != 1:  # 最内层if-elif控制侧面
-        #         go_straight()
-        # elif io_data[1] == 1 and io_data[2] == 1:
-        #         # if io_data[4] == 0 and io_data[5] == 1:
-        #         #     turn_left_left()
-        #         #     time.sleep(0.5)
-        #         # elif io_data[4] == 1 and io_data[5] == 0:
-        #         #     turn_right_right()
-        #         #     time.sleep(0.5)
-        #         # elif io_data[4] == 0 and io_data[5] == 0:
-        #         #     turn_right_right()
-        #         #     time.sleep(0.5)
-        #         # elif io_data[4] == 1 and io_data[5] == 1:
-        #         #     go_straight()
-        #     go_straight()
-        # elif io_data[1] == 0 and io_data[2] == 1:
-        #     turn_left()
-        # elif io_data[1] == 1 and io_data[2] == 0:
-        #     turn_right()
-    elif io_data[0] == 0 and io_data[3] == 1:
-        stop()
-        time.sleep(0.15)
-        turn_left()
-        time.sleep(0.1)
-    elif io_data[0] == 1 and io_data[3] == 0:
-        stop()
-        time.sleep(0.15)
-        turn_right()
-        time.sleep(0.1)
-    elif io_data[0] == 1 and io_data[3] == 1:
-        go_back()
-        # time.sleep(0.2)
-        # turn_left()
-        # time.sleep(0.25)
 
 def signal_handler(handler_signal, handler_frame):
     stop()
@@ -506,7 +461,7 @@ if __name__ == "__main__":
 
         filtered_left, filtered_right = ir_filter(io_data[0], io_data[3])
 
-        if adc_average2 < 410:
+        if adc_average2 < 378:
             if down_platform == 0:
                 set_angle_platform()
                 time.sleep(1.5)
@@ -515,8 +470,13 @@ if __name__ == "__main__":
         else:
             up_platform_act()
 
+        # if flag == 1:
+        #     if is_tag == 0:
+        #         print("炸弹")
+        #     elif is_tag == 1:
+        #         print('能量')
         # set_angle_mid()
-        # print('adc_average2:', adc_average2)
+        print('adc_average2:', adc_average2)
         # print('adc_average:', adc_average)
         # print(adc_value)
         # print(adc_value)
