@@ -17,34 +17,20 @@ distance = 0
 index = 0
 frame = 0
 
-di_fang_kuai = 1  # 敌方块
-zhong_li_kuai = 0  # 中立块
-zha_dan_kuai = 2  # 炸弹块
+#蓝方
+# di_fang_kuai = 2             # 敌方块2
+# zhong_li_kuai = 0            # 中立块0
+# zha_dan_kuai = 1             # 炸弹块1
+
+#黄方
+di_fang_kuai = 1             # 敌方块1
+zhong_li_kuai = 0            # 中立块0
+zha_dan_kuai = 2             # 炸弹块2
 
 adc_value = [0]
 adc_average = 0
+adc_average2 = 0
 io_data = [0]
-
-ir_history = [[1]*5, [1]*5]  # 用于存储左右红外传感器的历史值
-ir_index = 0
-
-down_platform = 1
-back = 0
-
-def ir_filter(new_left, new_right):
-    global ir_history, ir_index
-
-    # 更新历史数据
-    ir_history[0][ir_index] = new_left
-    ir_history[1][ir_index] = new_right
-    ir_index = (ir_index + 1) % 5
-
-    # 计算平均值
-    avg_left = sum(ir_history[0]) / 5
-    avg_right = sum(ir_history[1]) / 5
-
-    # 返回滤波后的值(0或1)
-    return 1 if avg_left > 0.5 else 0, 1 if avg_right > 0.5 else 0
 
 class ApriltagDetect:
     def __init__(self):
@@ -164,7 +150,7 @@ def April_start_detect():
             cap = cv2.VideoCapture(0)
         # frame = cv2.rotate(frame, cv2.ROTATE_180)
         ad.update_frame(frame)
-        cv2.imshow("img", frame)
+        # cv2.imshow("img", frame)
         if cv2.waitKey(1) & 0xff == ord('q'):
             break
     cap.release()
@@ -174,8 +160,10 @@ def get_adio_data():
     global io_data
     global adc_value
     global adc_average
+    global adc_average2
     adc_value = up.ADC_Get_All_Channle()
     adc_average = (adc_value[0] + adc_value[1] + adc_value[2]) / 3
+    adc_average2 = (adc_value[0] + adc_value[1] + adc_value[2] + adc_value[3]) / 4
 
     io_all_input = up.ADC_IO_GetAllInputLevel()
     io_array = '{:08b}'.format(io_all_input)
@@ -184,54 +172,79 @@ def get_adio_data():
         io = (int)(value)
         io_data.insert(0, io)
 
+#左边往前为+ 右边往前为-
+
 def go_straight():
     global adc_average
-    if adc_average > 650: #700
-        up.CDS_SetSpeed(1, -900)  # 800
-        up.CDS_SetSpeed(2, -900)  #
+    if adc_average > 1300: #2100
+        up.CDS_SetSpeed(1, 1000)  #600
+        up.CDS_SetSpeed(2, -1000)
+    # elif adc_average > 1600:
+    #     up.CDS_SetSpeed(1, 800)  # 600
+    #     up.CDS_SetSpeed(2, -800)  #
     else:
-        up.CDS_SetSpeed(1, -600)  #500
-        up.CDS_SetSpeed(2, -600)
+        up.CDS_SetSpeed(1, 500)  #500
+        up.CDS_SetSpeed(2, -500)
 
 def go_straight_slow():
-    up.CDS_SetSpeed(1, -400)
-    up.CDS_SetSpeed(2, -400)
+    up.CDS_SetSpeed(1, 500)  #右前左后
+    up.CDS_SetSpeed(2, -500)
 
 def turn_left():
-    up.CDS_SetSpeed(1, 600)   #700
-    up.CDS_SetSpeed(2, -600)        #700
+    up.CDS_SetSpeed(1, -900)   #700
+    up.CDS_SetSpeed(2, -900)   #700
+
+def turn_left_IO():
+    up.CDS_SetSpeed(1, -600)   #700
+    up.CDS_SetSpeed(2, -600)   #700
+
+def turn_left_left():
+    up.CDS_SetSpeed(1, -800)   #700
+    up.CDS_SetSpeed(2, -800)        #700
 
 def turn_left_tag():
-    up.CDS_SetSpeed(1, 400)
+    up.CDS_SetSpeed(1, -400)
     up.CDS_SetSpeed(2, -400)
 
+def turn_left_bug():
+    up.CDS_SetSpeed(1, -700)   #700
+    up.CDS_SetSpeed(2, -700)        #700
+
 def turn_left_down():
-    up.CDS_SetSpeed(1, 450)   #700
-    up.CDS_SetSpeed(2, -450)        #700
+    up.CDS_SetSpeed(1, -800)   #700
+    up.CDS_SetSpeed(2, -800)        #700
 
 def turn_right():
-    up.CDS_SetSpeed(1, -600)          # 700
+    up.CDS_SetSpeed(1, 900)          # 700
+    up.CDS_SetSpeed(2, 900)     # 700
+
+def turn_right_IO():
+    up.CDS_SetSpeed(1, 600)          # 700
     up.CDS_SetSpeed(2, 600)     # 700
 
+def turn_right_right():
+    up.CDS_SetSpeed(1, 800)          # 600
+    up.CDS_SetSpeed(2, 800)     # 600
+
 def turn_right_tag():
-    up.CDS_SetSpeed(1, -400)
+    up.CDS_SetSpeed(1, 400)
     up.CDS_SetSpeed(2, 400)
 
 def turn_right_down():
-    up.CDS_SetSpeed(1, -450)          # 700
-    up.CDS_SetSpeed(2, 450)     # 700
+    up.CDS_SetSpeed(1, 800)          # 700
+    up.CDS_SetSpeed(2, 800)     # 700
 
 def go_back():
-    up.CDS_SetSpeed(1, 400)
-    up.CDS_SetSpeed(2, 400)
+    up.CDS_SetSpeed(1, -500)
+    up.CDS_SetSpeed(2, 500)
 
 def go_back_tag():
-    up.CDS_SetSpeed(1, 600)
+    up.CDS_SetSpeed(1, -600)
     up.CDS_SetSpeed(2, 600)
 
 def down_back():
-    up.CDS_SetSpeed(1, 700)
-    up.CDS_SetSpeed(2, 700)
+    up.CDS_SetSpeed(1, -1000)
+    up.CDS_SetSpeed(2, 1000)
 
 def stop():
     up.CDS_SetSpeed(1, 0)
@@ -258,29 +271,21 @@ def down_platform_detect():
     global io_data
     if io_data[1] == 0 and io_data[2] == 0:
         stop()
-        set_angle_mid()
         time.sleep(0.5)
-        down_platform_act()
+        go_straight_slow()
+        time.sleep(0.3)
+        stop()
+        time.sleep(0.5)
+        down_back()
+        time.sleep(1)  #1.0
+        turn_left()
+        time.sleep(0.2)
     elif io_data[2] == 0 and io_data[3] == 1:
         turn_left_down()
     elif io_data[2] == 1 and io_data[3] == 0:
         turn_right_down()
     else:
         turn_right_down()
-
-def down_platform_act():
-    global down_platform
-    down_back()
-    time.sleep(0.5)
-    set_angle_up()
-    # up.CDS_SetAngle(3, 674, 512)  #3号 上面674 平地471 底下384 台下微抬535 台下抬高849
-    # up.CDS_SetAngle(4, 302, 512)  #4号 上面302 平地552 底下639 台下微抬471 台下抬高134
-    time.sleep(0.3)
-    set_angle_down()
-    # up.CDS_SetAngle(3, 384, 712)
-    # up.CDS_SetAngle(4, 639, 712)
-    time.sleep(0.5)
-    down_platform = 0
 
 def tag_solve():
     global is_tag
@@ -290,19 +295,19 @@ def tag_solve():
     global io_data
     # print(distance)
     if is_tag == 1:
-        if distance > 140:
-            if mid < 160 - tag_width / 3:
+        if distance > 150:
+            if mid < 150 - tag_width / 3:
                 turn_left_tag()
-                time.sleep(0.01)
+                # time.sleep(0.01)
                 # print('zuo')
-            elif mid > 160 + tag_width / 3:  #
+            elif mid > 170 + tag_width / 3:  #
                 turn_right_tag()
-                time.sleep(0.01)
+                # time.sleep(0.01)
                 # print("you")
             else:
                 go_straight()
                 # print("对准")
-        elif distance <= 140:
+        elif distance <= 160:
             if io_data[1] == 0 and io_data[2] == 0:
                 go_straight()
             elif io_data[1] == 0 and io_data[2] == 1:
@@ -310,20 +315,19 @@ def tag_solve():
             elif io_data[1] == 1 and io_data[2] == 0:
                 turn_right()
     if is_tag == 0:
-        if distance < 160:  #120
-            go_back_tag() #go_back()
-            time.sleep(0.2)
+        if distance < 200:  #160
+            go_back()   #go_back()
+            time.sleep(0.4)
+            # turn_left_bug()
+            # time.sleep(0.5) #0.2
             turn_left()
-            time.sleep(0.2)
+            time.sleep(0.3)
 
 def up_platform_act():
     global io_data
     global is_tag
     global flag
     global adc_average
-    # up.CDS_SetAngle(3, 471, 712)
-    # up.CDS_SetAngle(4, 552, 712)
-    set_angle_mid()
     if io_data[0] ==0 and io_data[3] == 0: #最外层if-elif控制边界
         go_straight()
         if flag == 1:
@@ -334,82 +338,36 @@ def up_platform_act():
                     go_straight()
             elif io_data[1] == 1 and io_data[2] == 1:
                 if io_data[4] == 0 and io_data[5] == 1:
-                    turn_left()
+                    turn_left_left()
                     time.sleep(0.4)
                 elif io_data[4] == 1 and io_data[5] == 0:
-                    turn_right()
+                    turn_right_right()
                     time.sleep(0.4)
                 elif io_data[4] == 0 and io_data[5] == 0:
-                    turn_right()
+                    turn_right_right()
                     time.sleep(0.4)
                 elif io_data[4] == 1 and io_data[5] == 1:
                     go_straight()
             elif io_data[1] == 0 and io_data[2] == 1:
-                turn_left()
+                turn_left_IO()
             elif io_data[1] == 1 and io_data[2] == 0:
-                turn_right()
+                turn_right_IO()
     elif io_data[0] == 0 and io_data[3] == 1:
         go_back()
-        time.sleep(0.2)
+        time.sleep(0.4)
         turn_left()
-        time.sleep(0.3)
+        time.sleep(0.3)  #0.3
     elif io_data[0] == 1 and io_data[3] == 0:
         go_back()
-        time.sleep(0.2)
+        time.sleep(0.4)
         turn_right()
         time.sleep(0.3)
     elif io_data[0] == 1 and io_data[3] == 1:
         go_back()
-        time.sleep(0.2)
+        time.sleep(0.4)
         turn_left()
         time.sleep(0.3)
 
-def up_platform_act2(filtered_left, filtered_right):
-    global io_data
-    global is_tag
-    global flag
-    global adc_average
-    up.CDS_SetAngle(3, 477, 712)
-    up.CDS_SetAngle(4, 523, 712)
-    if filtered_left == 0 and  filtered_right == 0: #最外层if-elif控制边界
-        go_straight()
-        if flag == 1:
-            tag_solve()
-        elif flag == 0:
-            if io_data[1] == 0 and io_data[2] == 0:  # 次外层if-elif控制箱子
-                if filtered_left != 1 and  filtered_right != 1:  # 最内层if-elif控制侧面
-                    go_straight()
-            elif io_data[1] == 1 and io_data[2] == 1:
-                if io_data[4] == 0 and io_data[5] == 1:
-                    turn_left()
-                    time.sleep(0.3)
-                elif io_data[4] == 1 and io_data[5] == 0:
-                    turn_right()
-                    time.sleep(0.3)
-                elif io_data[4] == 0 and io_data[5] == 0:
-                    turn_right()
-                    time.sleep(0.3)
-                elif io_data[4] == 1 and io_data[5] == 1:
-                    go_straight()
-            elif io_data[1] == 0 and io_data[2] == 1:
-                turn_left()
-            elif io_data[1] == 1 and io_data[2] == 0:
-                turn_right()
-    elif filtered_left == 0 and filtered_right == 1:
-        go_back()
-        time.sleep(0.2)
-        turn_left()
-        time.sleep(0.3)
-    elif filtered_left == 1 and filtered_right == 0:
-        go_back()
-        time.sleep(0.2)
-        turn_right()
-        time.sleep(0.3)
-    elif filtered_left and filtered_right == 1:
-        go_back()
-        time.sleep(0.2)
-        turn_left()
-        time.sleep(0.3)
 
 def signal_handler(handler_signal, handler_frame):
     stop()
@@ -433,26 +391,20 @@ if __name__ == "__main__":
     target = threading.Thread(target=April_start_detect)
     target.start()
 
-    while True:
-        get_adio_data()
-        if io_data[4] == 0 and io_data[5] == 0:
-            break
+    # while True:
+    #     get_adio_data()
+    #     if io_data[4] == 0 and io_data[5] == 0:
+    #         break
 
     while True:
         get_adio_data()
 
-        filtered_left, filtered_right = ir_filter(io_data[0], io_data[3])
-
-        if adc_average < 425:
-            if down_platform == 0:
-                set_angle_platform()
-                time.sleep(1.5)
-                down_platform = 1
+        if adc_average2 < 727:
             down_platform_detect()
         else:
             up_platform_act()
 
-        # set_angle_mid()
-        print('adc_average:', adc_average)
+        # print('adc_average:', adc_average2)
         # print(adc_value)
+        # print(io_data)
         # print('distance:', distance)
