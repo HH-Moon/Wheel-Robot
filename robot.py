@@ -32,6 +32,10 @@ adc_average = 0
 adc_average2 = 0
 io_data = [0]
 
+camera_reset = 0
+camera_reload = 1
+camera_safe = 0
+
 class ApriltagDetect:
     def __init__(self):
         self.target_id = 0
@@ -133,24 +137,44 @@ class ApriltagDetect:
 
 def April_start_detect():
     global frame
-    cap = cv2.VideoCapture(0)  #'/dev/video0'
-    ad = ApriltagDetect()
+    global camera_reset
+    global camera_reload
+    global camera_safe
+    cap = cv2.VideoCapture(0)
     cap.set(3, 320)
     cap.set(4, 240)
+    cap.set(cv2.CAP_PROP_FPS, 60)
+    ad = ApriltagDetect()
+
     while True:
         ret, frame = cap.read()
-        if ret is False:
+        if camera_reset:
+            cap.set(3, 320)
+            cap.set(4, 240)
+            cap.set(cv2.CAP_PROP_FPS, 60)
+            time.sleep(0.5)
+            camera_reset = 0
+        # if camera_reload:
+        #     camera_reload = 0
+        #     ret = 0
+        if not ret or frame is None:
+            print("摄像头断开连接")
+            camera_safe = 0
             cap.release()
             time.sleep(0.1)
-            print("reconnect to camera")
+            print("正在尝试重连")
             subprocess.check_call("sudo modprobe -rf uvcvideo", shell=True)
             time.sleep(0.4)
             subprocess.check_call("sudo modprobe uvcvideo", shell=True)
             time.sleep(0.2)
             cap = cv2.VideoCapture(0)
+            camera_reset = 1
+            continue
+        else:
+            camera_safe = 1
         # frame = cv2.rotate(frame, cv2.ROTATE_180)
         ad.update_frame(frame)
-        # cv2.imshow("img", frame)
+        cv2.imshow("img", frame)
         if cv2.waitKey(1) & 0xff == ord('q'):
             break
     cap.release()
@@ -399,10 +423,18 @@ if __name__ == "__main__":
     while True:
         get_adio_data()
 
-        if adc_average2 < 727:
-            down_platform_detect()
+        if camera_safe:
+            if adc_average2 <650:
+                down_platform_detect()
+            else:
+                up_platform_act()
         else:
-            up_platform_act()
+            stop()
+
+        # if adc_average2 < 650:
+        #     down_platform_detect()
+        # else:
+        #     up_platform_act()
 
         # print('adc_average:', adc_average2)
         # print(adc_value)
