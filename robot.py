@@ -174,7 +174,7 @@ def April_start_detect():
             camera_safe = 1
         # frame = cv2.rotate(frame, cv2.ROTATE_180)
         ad.update_frame(frame)
-        cv2.imshow("img", frame)
+        # cv2.imshow("img", frame)
         if cv2.waitKey(1) & 0xff == ord('q'):
             break
     cap.release()
@@ -200,15 +200,15 @@ def get_adio_data():
 
 def go_straight():
     global adc_average
-    if adc_average > 1300: #2100
+    if adc_average > 1320: #2100
         up.CDS_SetSpeed(1, 1000)  #600
         up.CDS_SetSpeed(2, -1000)
     # elif adc_average > 1600:
     #     up.CDS_SetSpeed(1, 800)  # 600
     #     up.CDS_SetSpeed(2, -800)  #
     else:
-        up.CDS_SetSpeed(1, 500)  #500
-        up.CDS_SetSpeed(2, -500)
+        up.CDS_SetSpeed(1, 450)  #500
+        up.CDS_SetSpeed(2, -450)
 
 def go_straight_slow():
     up.CDS_SetSpeed(1, 500)  #右前左后
@@ -296,7 +296,7 @@ def down_platform_detect():
     if io_data[1] == 0 and io_data[2] == 0:
         stop()
         time.sleep(0.5)
-        go_straight_slow()
+        go_back()
         time.sleep(0.3)
         stop()
         time.sleep(0.5)
@@ -424,7 +424,7 @@ if __name__ == "__main__":
         get_adio_data()
 
         if camera_safe:
-            if adc_average2 <650:
+            if adc_average2 < 717:
                 down_platform_detect()
             else:
                 up_platform_act()
