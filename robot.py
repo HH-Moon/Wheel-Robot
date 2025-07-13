@@ -36,6 +36,10 @@ camera_reset = 0
 camera_reload = 1
 camera_safe = 0
 
+first_flag = 0
+io_flag = 0
+adc_flag = 0
+
 class ApriltagDetect:
     def __init__(self):
         self.target_id = 0
@@ -177,6 +181,7 @@ def April_start_detect():
         # cv2.imshow("img", frame)
         if cv2.waitKey(1) & 0xff == ord('q'):
             break
+        # print("camera succeed")
     cap.release()
     cv2.destroyAllWindows()
 
@@ -196,27 +201,41 @@ def get_adio_data():
         io = (int)(value)
         io_data.insert(0, io)
 
+def judge_adio():
+    global io_data
+    global io_flag
+    global adc_flag
+
+    if adc_average2 < 690 or adc_average2 > 800:
+        adc_flag = 1
+    else:
+        adc_flag = 0
+    if io_data[0] == 0 and io_data[3] == 0:
+        io_flag = 1
+    elif io_data[0] == 1 and io_data[3] == 1:
+        io_flag = 0
+
 #左边往前为+ 右边往前为-
 
 def go_straight():
-    global adc_average
-    if adc_average > 1320: #2100
+    global adc_average2
+    if adc_average2 > 1150: #2100
         up.CDS_SetSpeed(1, 1000)  #600
         up.CDS_SetSpeed(2, -1000)
     # elif adc_average > 1600:
     #     up.CDS_SetSpeed(1, 800)  # 600
     #     up.CDS_SetSpeed(2, -800)  #
     else:
-        up.CDS_SetSpeed(1, 450)  #500
-        up.CDS_SetSpeed(2, -450)
+        up.CDS_SetSpeed(1, 700)  #500
+        up.CDS_SetSpeed(2, -700)
 
 def go_straight_slow():
     up.CDS_SetSpeed(1, 500)  #右前左后
     up.CDS_SetSpeed(2, -500)
 
 def turn_left():
-    up.CDS_SetSpeed(1, -900)   #700
-    up.CDS_SetSpeed(2, -900)   #700
+    up.CDS_SetSpeed(1, -800)   #700
+    up.CDS_SetSpeed(2, -800)   #700
 
 def turn_left_IO():
     up.CDS_SetSpeed(1, -600)   #700
@@ -239,8 +258,8 @@ def turn_left_down():
     up.CDS_SetSpeed(2, -800)        #700
 
 def turn_right():
-    up.CDS_SetSpeed(1, 900)          # 700
-    up.CDS_SetSpeed(2, 900)     # 700
+    up.CDS_SetSpeed(1, 800)          # 700
+    up.CDS_SetSpeed(2, 800)     # 700
 
 def turn_right_IO():
     up.CDS_SetSpeed(1, 600)          # 700
@@ -259,6 +278,10 @@ def turn_right_down():
     up.CDS_SetSpeed(2, 800)     # 700
 
 def go_back():
+    up.CDS_SetSpeed(1, -700)
+    up.CDS_SetSpeed(2, 700)
+
+def go_back_platform():
     up.CDS_SetSpeed(1, -500)
     up.CDS_SetSpeed(2, 500)
 
@@ -293,15 +316,48 @@ def set_angle_platform():
 
 def down_platform_detect():
     global io_data
+    global first_flag
     if io_data[1] == 0 and io_data[2] == 0:
+        # if first_flag == 0:
+        #     stop()
+        #     time.sleep(0.5)
+        #     # go_back_platform()
+        #     # time.sleep(0.2)  # 0.2
+        #     # stop()
+        #     # time.sleep(0.5)
+        #     down_back()
+        #     time.sleep(2)  # 1.0
+        #     turn_left()
+        #     time.sleep(0.2)
+        #     first_flag = 1
+        # else:
+        #     stop()
+        #     time.sleep(0.5)
+        #     go_back_platform()
+        #     time.sleep(1) #0.2
+        #     stop()
+        #     time.sleep(0.5)
+        #     go_straight_slow()
+        #     time.sleep(0.3)
+        #     stop()
+        #     time.sleep(0.5)
+        #     down_back()
+        #     time.sleep(1)  #1.0
+        #     turn_left()
+        #     time.sleep(0.2)
+
         stop()
         time.sleep(0.5)
-        go_back()
-        time.sleep(0.3)
+        go_back_platform()
+        time.sleep(1)  # 0.2
+        stop()
+        time.sleep(0.5)
+        go_straight_slow()
+        time.sleep(0.1)
         stop()
         time.sleep(0.5)
         down_back()
-        time.sleep(1)  #1.0
+        time.sleep(1)  # 1.0
         turn_left()
         time.sleep(0.2)
     elif io_data[2] == 0 and io_data[3] == 1:
@@ -340,12 +396,12 @@ def tag_solve():
                 turn_right()
     if is_tag == 0:
         if distance < 200:  #160
-            go_back()   #go_back()
+            go_back_tag()   #go_back()
             time.sleep(0.4)
             # turn_left_bug()
             # time.sleep(0.5) #0.2
             turn_left()
-            time.sleep(0.3)
+            time.sleep(0.5) #0.3
 
 def up_platform_act():
     global io_data
@@ -378,17 +434,17 @@ def up_platform_act():
                 turn_right_IO()
     elif io_data[0] == 0 and io_data[3] == 1:
         go_back()
-        time.sleep(0.4)
+        time.sleep(0.2)
         turn_left()
         time.sleep(0.3)  #0.3
     elif io_data[0] == 1 and io_data[3] == 0:
         go_back()
-        time.sleep(0.4)
+        time.sleep(0.2)
         turn_right()
         time.sleep(0.3)
     elif io_data[0] == 1 and io_data[3] == 1:
         go_back()
-        time.sleep(0.4)
+        time.sleep(0.2)
         turn_left()
         time.sleep(0.3)
 
@@ -415,28 +471,55 @@ if __name__ == "__main__":
     target = threading.Thread(target=April_start_detect)
     target.start()
 
-    # while True:
-    #     get_adio_data()
-    #     if io_data[4] == 0 and io_data[5] == 0:
-    #         break
+    while True:
+        get_adio_data()
+        if io_data[4] == 0 and io_data[5] == 0:
+            break
+
+    stop()
+    time.sleep(0.5)
+    go_back_platform()
+    time.sleep(1)  # 0.2
+    stop()
+    time.sleep(0.5)
+    go_straight_slow()
+    time.sleep(0.1)
+    stop()
+    time.sleep(0.5)
+    down_back()
+    time.sleep(1)  # 1.0
+    turn_left()
+    time.sleep(0.2)
 
     while True:
         get_adio_data()
 
         if camera_safe:
-            if adc_average2 < 717:
+            if adc_average2 < 780 and adc_value[5] > 10 and adc_value[7] > 10:
                 down_platform_detect()
-            else:
+            elif adc_average2 > 640 and adc_value[5] < 10 and adc_value[7] < 10:
                 up_platform_act()
+            elif adc_average2 < 640 and adc_value[5] < 10 and adc_value[7] > 10:
+                turn_left()
+                time.sleep(0.6)
+            elif adc_average2 < 780 and adc_value[5] > 10 and adc_value[7] < 10:
+                turn_right()
+                time.sleep(0.6)
+            else:
+                go_straight_slow()
+                time.sleep(0.5)
         else:
             stop()
+
+        # up_platform_act()
 
         # if adc_average2 < 650:
         #     down_platform_detect()
         # else:
         #     up_platform_act()
-
-        # print('adc_average:', adc_average2)
+        #
+        # print('adc_average2:', adc_average2)
+        # print('adc_average:', adc_average)
         # print(adc_value)
         # print(io_data)
         # print('distance:', distance)
