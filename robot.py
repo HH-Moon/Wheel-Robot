@@ -18,17 +18,18 @@ index = 0
 frame = 0
 
 #蓝方
-# di_fang_kuai = 2             # 敌方块2
-# zhong_li_kuai = 0            # 中立块0
-# zha_dan_kuai = 1             # 炸弹块1
+di_fang_kuai = 2             # 敌方块2
+zhong_li_kuai = 0            # 中立块0
+zha_dan_kuai = 1             # 炸弹块1
 
 #黄方
-di_fang_kuai = 1             # 敌方块1
-zhong_li_kuai = 0            # 中立块0
-zha_dan_kuai = 2             # 炸弹块2
+# di_fang_kuai = 1             # 敌方块1
+# zhong_li_kuai = 0            # 中立块0
+# zha_dan_kuai = 2             # 炸弹块2
 
 adc_value = [0]
-adc_average = 0
+adc_average3 = 0
+adc_average4 = 0
 adc_average2 = 0
 io_data = [0]
 
@@ -188,11 +189,14 @@ def April_start_detect():
 def get_adio_data():
     global io_data
     global adc_value
-    global adc_average
+    global adc_average3
+    global adc_average4
     global adc_average2
     adc_value = up.ADC_Get_All_Channle()
-    adc_average = (adc_value[0] + adc_value[1] + adc_value[2]) / 3
-    adc_average2 = (adc_value[0] + adc_value[1] + adc_value[2] + adc_value[3]) / 4
+    adc_average3 = (adc_value[0] + adc_value[1] + adc_value[2]) / 3
+    adc_average4 = (adc_value[0] + adc_value[1] + adc_value[2] + adc_value[3]) / 4
+    adc_average2 = (adc_value[0] + adc_value[1]) / 2
+
 
     io_all_input = up.ADC_IO_GetAllInputLevel()
     io_array = '{:08b}'.format(io_all_input)
@@ -201,33 +205,20 @@ def get_adio_data():
         io = (int)(value)
         io_data.insert(0, io)
 
-def judge_adio():
-    global io_data
-    global io_flag
-    global adc_flag
-
-    if adc_average2 < 690 or adc_average2 > 800:
-        adc_flag = 1
-    else:
-        adc_flag = 0
-    if io_data[0] == 0 and io_data[3] == 0:
-        io_flag = 1
-    elif io_data[0] == 1 and io_data[3] == 1:
-        io_flag = 0
-
 #左边往前为+ 右边往前为-
 
 def go_straight():
     global adc_average2
-    if adc_average2 > 1150: #2100
+    global adc_average3
+    if adc_average2 > 1400: #2100
         up.CDS_SetSpeed(1, 1000)  #600
         up.CDS_SetSpeed(2, -1000)
     # elif adc_average > 1600:
     #     up.CDS_SetSpeed(1, 800)  # 600
     #     up.CDS_SetSpeed(2, -800)  #
     else:
-        up.CDS_SetSpeed(1, 700)  #500
-        up.CDS_SetSpeed(2, -700)
+        up.CDS_SetSpeed(1, 500)  #500
+        up.CDS_SetSpeed(2, -500)
 
 def go_straight_slow():
     up.CDS_SetSpeed(1, 500)  #右前左后
@@ -349,15 +340,15 @@ def down_platform_detect():
         stop()
         time.sleep(0.5)
         go_back_platform()
-        time.sleep(1)  # 0.2
-        stop()
-        time.sleep(0.5)
-        go_straight_slow()
-        time.sleep(0.1)
-        stop()
-        time.sleep(0.5)
+        time.sleep(0.3)    # 0.6 0.8 1
+        # stop()
+        # time.sleep(0.5)
+        # go_straight_slow()
+        # time.sleep(0.2)  # 0.3
+        # stop()
+        # time.sleep(0.5)
         down_back()
-        time.sleep(1)  # 1.0
+        time.sleep(1)    # 1.0
         turn_left()
         time.sleep(0.2)
     elif io_data[2] == 0 and io_data[3] == 1:
@@ -391,9 +382,9 @@ def tag_solve():
             if io_data[1] == 0 and io_data[2] == 0:
                 go_straight()
             elif io_data[1] == 0 and io_data[2] == 1:
-                turn_left()
+                turn_left_tag()
             elif io_data[1] == 1 and io_data[2] == 0:
-                turn_right()
+                turn_right_tag()
     if is_tag == 0:
         if distance < 200:  #160
             go_back_tag()   #go_back()
@@ -408,13 +399,30 @@ def up_platform_act():
     global is_tag
     global flag
     global adc_average
-    if io_data[0] ==0 and io_data[3] == 0: #最外层if-elif控制边界
+    if io_data[0] == 0 and io_data[3] == 0: #最外层if-elif控制边界
         go_straight()
+        # if adc_value[6] < 10 and io_data[7] == 0:
+        #     go_straight()
+        # elif adc_value[6] < 10 and io_data[7] == 1:
+        #     go_back()
+        #     time.sleep(0.2)
+        #     turn_left()
+        #     time.sleep(0.3)
+        # elif adc_value[6] > 10 and io_data[7] == 0:
+        #     go_back()
+        #     time.sleep(0.2)
+        #     turn_right()
+        #     time.sleep(0.3)
+        # elif adc_value[6] > 10 and io_data[7] == 1:
+        #     go_back()
+        #     time.sleep(0.2)
+        #     turn_left()
+        #     time.sleep(0.3)
         if flag == 1:
             tag_solve()
-        elif flag == 0: #flag == 0 or is_tag == 1
+        elif flag == 0:  # flag == 0 or is_tag == 1
             if io_data[1] == 0 and io_data[2] == 0:  # 次外层if-elif控制箱子
-                if io_data[0] != 1 and io_data[3] != 1:  # 最内层if-elif控制侧面
+                if io_data[0] != 1 and io_data[3] != 1:  #最内层if-elif控制侧面
                     go_straight()
             elif io_data[1] == 1 and io_data[2] == 1:
                 if io_data[4] == 0 and io_data[5] == 1:
@@ -433,15 +441,39 @@ def up_platform_act():
             elif io_data[1] == 1 and io_data[2] == 0:
                 turn_right_IO()
     elif io_data[0] == 0 and io_data[3] == 1:
-        go_back()
-        time.sleep(0.2)
-        turn_left()
-        time.sleep(0.3)  #0.3
+        if flag == 0:
+            go_back()
+            time.sleep(0.2)
+            turn_left()
+            time.sleep(0.3)  #0.3
+        elif flag == 1:
+            if is_tag == 0:
+                go_back()
+                time.sleep(0.2)
+                turn_left()
+                time.sleep(0.3)  # 0.3
+            elif is_tag == 1:
+                go_back()
+                time.sleep(0.2)
+                turn_left()
+                time.sleep(0.1)  # 0.3
     elif io_data[0] == 1 and io_data[3] == 0:
-        go_back()
-        time.sleep(0.2)
-        turn_right()
-        time.sleep(0.3)
+        if flag == 0:
+            go_back()
+            time.sleep(0.2)
+            turn_right()
+            time.sleep(0.3)
+        elif flag == 1:
+            if is_tag == 0:
+                go_back()
+                time.sleep(0.2)
+                turn_right()
+                time.sleep(0.3)
+            elif is_tag == 1:
+                go_back()
+                time.sleep(0.2)
+                turn_right()
+                time.sleep(0.1)
     elif io_data[0] == 1 and io_data[3] == 1:
         go_back()
         time.sleep(0.2)
@@ -471,55 +503,42 @@ if __name__ == "__main__":
     target = threading.Thread(target=April_start_detect)
     target.start()
 
-    while True:
-        get_adio_data()
-        if io_data[4] == 0 and io_data[5] == 0:
-            break
-
-    stop()
-    time.sleep(0.5)
-    go_back_platform()
-    time.sleep(1)  # 0.2
-    stop()
-    time.sleep(0.5)
-    go_straight_slow()
-    time.sleep(0.1)
-    stop()
-    time.sleep(0.5)
-    down_back()
-    time.sleep(1)  # 1.0
-    turn_left()
-    time.sleep(0.2)
+    # while True:
+    #     get_adio_data()
+    #     if io_data[4] == 0 and io_data[5] == 0:
+    #         break
+    #
+    # # stop()
+    # # time.sleep(0.5)
+    # go_back_platform()
+    # time.sleep(0.6)  # 0.8 1
+    # # stop()
+    # # time.sleep(0.5)
+    # # go_straight_slow()
+    # # time.sleep(0.2)  # 0.3
+    # # stop()
+    # # time.sleep(0.5)
+    # down_back()
+    # time.sleep(1)  # 1.0
+    # turn_left()
+    # time.sleep(0.2)
 
     while True:
         get_adio_data()
 
         if camera_safe:
-            if adc_average2 < 780 and adc_value[5] > 10 and adc_value[7] > 10:
+            if adc_value[5] > 1000 and adc_value[7] > 1000:
                 down_platform_detect()
-            elif adc_average2 > 640 and adc_value[5] < 10 and adc_value[7] < 10:
-                up_platform_act()
-            elif adc_average2 < 640 and adc_value[5] < 10 and adc_value[7] > 10:
-                turn_left()
-                time.sleep(0.6)
-            elif adc_average2 < 780 and adc_value[5] > 10 and adc_value[7] < 10:
-                turn_right()
-                time.sleep(0.6)
             else:
-                go_straight_slow()
-                time.sleep(0.5)
+                up_platform_act()
         else:
             stop()
 
-        # up_platform_act()
+        # go_straight_slow()
 
-        # if adc_average2 < 650:
-        #     down_platform_detect()
-        # else:
-        #     up_platform_act()
-        #
         # print('adc_average2:', adc_average2)
-        # print('adc_average:', adc_average)
+        # print('adc_average4:', adc_average4)
+        # print('adc_average3:', adc_average3)
         # print(adc_value)
         # print(io_data)
         # print('distance:', distance)
