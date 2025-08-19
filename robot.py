@@ -210,7 +210,8 @@ def get_adio_data():
 def go_straight():
     global adc_average2
     global adc_average3
-    if adc_average2 > 1400: #2100
+    global adc_average4
+    if adc_average4 > 1500: #2100
         up.CDS_SetSpeed(1, 1000)  #600
         up.CDS_SetSpeed(2, -1000)
     # elif adc_average > 1600:
@@ -308,7 +309,7 @@ def set_angle_platform():
 def down_platform_detect():
     global io_data
     global first_flag
-    if io_data[1] == 0 and io_data[2] == 0:
+    if io_data[1] == 0 and io_data[7] == 0:
         # if first_flag == 0:
         #     stop()
         #     time.sleep(0.5)
@@ -340,20 +341,20 @@ def down_platform_detect():
         stop()
         time.sleep(0.5)
         go_back_platform()
-        time.sleep(0.3)    # 0.6 0.8 1
-        # stop()
-        # time.sleep(0.5)
-        # go_straight_slow()
-        # time.sleep(0.2)  # 0.3
-        # stop()
-        # time.sleep(0.5)
+        time.sleep(0.8)    # 0.6 0.8 1
+        stop()
+        time.sleep(0.5)
+        go_straight_slow()
+        time.sleep(0.2)  # 0.3
+        stop()
+        time.sleep(0.5)
         down_back()
         time.sleep(1)    # 1.0
         turn_left()
         time.sleep(0.2)
-    elif io_data[2] == 0 and io_data[3] == 1:
+    elif io_data[1] == 0 and io_data[7] == 1:
         turn_left_down()
-    elif io_data[2] == 1 and io_data[3] == 0:
+    elif io_data[1] == 1 and io_data[7] == 0:
         turn_right_down()
     else:
         turn_right_down()
@@ -379,11 +380,11 @@ def tag_solve():
                 go_straight()
                 # print("对准")
         elif distance <= 160:
-            if io_data[1] == 0 and io_data[2] == 0:
+            if io_data[1] == 0 and io_data[7] == 0:
                 go_straight()
-            elif io_data[1] == 0 and io_data[2] == 1:
+            elif io_data[1] == 0 and io_data[7] == 1:
                 turn_left_tag()
-            elif io_data[1] == 1 and io_data[2] == 0:
+            elif io_data[1] == 1 and io_data[7] == 0:
                 turn_right_tag()
     if is_tag == 0:
         if distance < 200:  #160
@@ -421,10 +422,10 @@ def up_platform_act():
         if flag == 1:
             tag_solve()
         elif flag == 0:  # flag == 0 or is_tag == 1
-            if io_data[1] == 0 and io_data[2] == 0:  # 次外层if-elif控制箱子
+            if io_data[1] == 0 and io_data[7] == 0:  # 次外层if-elif控制箱子
                 if io_data[0] != 1 and io_data[3] != 1:  #最内层if-elif控制侧面
                     go_straight()
-            elif io_data[1] == 1 and io_data[2] == 1:
+            elif io_data[1] == 1 and io_data[7] == 1:
                 if io_data[4] == 0 and io_data[5] == 1:
                     turn_left_left()
                     time.sleep(0.4)
@@ -436,9 +437,9 @@ def up_platform_act():
                     time.sleep(0.4)
                 elif io_data[4] == 1 and io_data[5] == 1:
                     go_straight()
-            elif io_data[1] == 0 and io_data[2] == 1:
+            elif io_data[1] == 0 and io_data[7] == 1:
                 turn_left_IO()
-            elif io_data[1] == 1 and io_data[2] == 0:
+            elif io_data[1] == 1 and io_data[7] == 0:
                 turn_right_IO()
     elif io_data[0] == 0 and io_data[3] == 1:
         if flag == 0:
@@ -503,25 +504,25 @@ if __name__ == "__main__":
     target = threading.Thread(target=April_start_detect)
     target.start()
 
-    # while True:
-    #     get_adio_data()
-    #     if io_data[4] == 0 and io_data[5] == 0:
-    #         break
-    #
-    # # stop()
-    # # time.sleep(0.5)
-    # go_back_platform()
-    # time.sleep(0.6)  # 0.8 1
-    # # stop()
-    # # time.sleep(0.5)
-    # # go_straight_slow()
-    # # time.sleep(0.2)  # 0.3
-    # # stop()
-    # # time.sleep(0.5)
-    # down_back()
-    # time.sleep(1)  # 1.0
-    # turn_left()
-    # time.sleep(0.2)
+    while True:
+        get_adio_data()
+        if io_data[4] == 0 and io_data[5] == 0:
+            break
+
+    stop()
+    time.sleep(0.5)
+    go_back_platform()
+    time.sleep(0.3)  # 0.8 1
+    stop()
+    time.sleep(0.5)
+    # go_straight_slow()
+    # time.sleep(0.2)  # 0.3
+    # stop()
+    # time.sleep(0.5)
+    down_back()
+    time.sleep(1.2)  # 1.0
+    turn_left()
+    time.sleep(0.2)
 
     while True:
         get_adio_data()
@@ -534,11 +535,14 @@ if __name__ == "__main__":
         else:
             stop()
 
+        # down_back()
+
         # go_straight_slow()
 
         # print('adc_average2:', adc_average2)
         # print('adc_average4:', adc_average4)
         # print('adc_average3:', adc_average3)
         # print(adc_value)
+        # print(adc_value[5], adc_value[7])
         # print(io_data)
         # print('distance:', distance)
