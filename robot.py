@@ -211,7 +211,7 @@ def go_straight():
     global adc_average2
     global adc_average3
     global adc_average4
-    if adc_average4 > 1300: #2100
+    if adc_average4 > 1100: #2100
         up.CDS_SetSpeed(1, 1000)  #600
         up.CDS_SetSpeed(2, -1000)
     # elif adc_average > 1600:
@@ -508,10 +508,10 @@ if __name__ == "__main__":
     target = threading.Thread(target=April_start_detect)
     target.start()
 
-    while True:
-        get_adio_data()
-        if io_data[4] == 0 and io_data[5] == 0:
-            break
+    # while True:
+    #     get_adio_data()
+    #     if io_data[4] == 0 and io_data[5] == 0:
+    #         break
 
     # stop()
     # time.sleep(0.5)
@@ -526,7 +526,7 @@ if __name__ == "__main__":
     # down_back()
     # time.sleep(1.2)  # 1.0
     # turn_left()
-    # time.sleep(0.2)a
+    # time.sleep(0.2)
 
     # stop()
     # time.sleep(0.5)
@@ -545,8 +545,6 @@ if __name__ == "__main__":
                 up_platform_act()
         else:
             stop()
-
-        # down_back()
 
         # go_straight_slow()
 
