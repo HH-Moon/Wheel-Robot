@@ -211,7 +211,7 @@ def go_straight():
     global adc_average2
     global adc_average3
     global adc_average4
-    if adc_average4 > 1500: #2100
+    if adc_average4 > 1300: #2100
         up.CDS_SetSpeed(1, 1000)  #600
         up.CDS_SetSpeed(2, -1000)
     # elif adc_average > 1600:
@@ -285,6 +285,10 @@ def down_back():
     up.CDS_SetSpeed(1, -1000)
     up.CDS_SetSpeed(2, 1000)
 
+def back_demo():
+    up.CDS_SetSpeed(1, -800)
+    up.CDS_SetSpeed(2, 800)
+
 def stop():
     up.CDS_SetSpeed(1, 0)
     up.CDS_SetSpeed(2, 0)
@@ -341,14 +345,14 @@ def down_platform_detect():
         stop()
         time.sleep(0.5)
         go_back_platform()
-        time.sleep(0.8)    # 0.6 0.8 1
+        time.sleep(1.5)    # 0.6 0.8 1
         stop()
         time.sleep(0.5)
         go_straight_slow()
-        time.sleep(0.2)  # 0.3
+        time.sleep(0.4)  # 0.45
         stop()
         time.sleep(0.5)
-        down_back()
+        back_demo()
         time.sleep(1)    # 1.0
         turn_left()
         time.sleep(0.2)
@@ -509,20 +513,27 @@ if __name__ == "__main__":
         if io_data[4] == 0 and io_data[5] == 0:
             break
 
-    stop()
-    time.sleep(0.5)
-    go_back_platform()
-    time.sleep(0.3)  # 0.8 1
-    stop()
-    time.sleep(0.5)
-    # go_straight_slow()
-    # time.sleep(0.2)  # 0.3
     # stop()
     # time.sleep(0.5)
-    down_back()
-    time.sleep(1.2)  # 1.0
-    turn_left()
-    time.sleep(0.2)
+    # go_back_platform()
+    # time.sleep(0.2)  # 0.8 1
+    # stop()
+    # time.sleep(0.5)
+    # # # go_straight_slow()
+    # # # time.sleep(0.2)  # 0.3
+    # # # stop()
+    # # # time.sleep(0.5)
+    # down_back()
+    # time.sleep(1.2)  # 1.0
+    # turn_left()
+    # time.sleep(0.2)a
+
+    # stop()
+    # time.sleep(0.5)
+    # back_demo()
+    # time.sleep(1.4)
+    # turn_left()
+    # time.sleep(0.2)
 
     while True:
         get_adio_data()
